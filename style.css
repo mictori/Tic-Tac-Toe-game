@@ -1,0 +1,40 @@
+* {
+	box-sizing: border-box;
+	font-size: 100%;
+}
+
+input,
+button {
+	font: inherit;
+}
+
+body {
+	margin: 0;
+	line-height: 1.5;
+	-webkit-font-smoothing: antialiased;
+	font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+		Roboto, sans-serif;
+}
+
+h1 {
+	font-size: 2.5rem;
+	text-align: center;
+}
+
+.gameboard-container {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+}
+
+.board {
+	margin: 2em;
+	width: 15rem;
+	height: 15rem;
+	border: 2px solid gray;
+}
+
+button {
+	margin: 1em;
+}
