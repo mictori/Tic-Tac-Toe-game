@@ -1,6 +1,17 @@
-* {
+/*  GLOBAL */
+*,
+*::after,
+*::before {
 	box-sizing: border-box;
-	font-size: 100%;
+	font: 100%;
+}
+
+:root {
+	--mark: hsl(0, 0%, 20%);
+	--border: hsl(0, 0%, 60%);
+	--hover: hsl(0, 1%, 78%);
+	--bg: hsl(0, 0%, 100%);
+	--mark-size: 4.35rem;
 }
 
 input,
@@ -21,6 +32,8 @@ h1 {
 	text-align: center;
 }
 
+/* GAME BOARD */
+
 .gameboard-container {
 	display: flex;
 	flex-direction: column;
@@ -29,12 +42,107 @@ h1 {
 }
 
 .board {
-	margin: 2em;
-	width: 15rem;
-	height: 15rem;
-	border: 2px solid gray;
+	display: grid;
+	grid-template-columns: repeat(3, auto);
+	grid-template-rows: repeat(3, auto);
+	justify-content: center;
+	align-content: center;
+	justify-items: center;
+	align-items: center;
+	width: 50vw;
+	height: 50vh;
 }
 
-button {
+.cell {
+	width: 6.25em;
+	height: 6.25em;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: center;
+	border: 2px solid var(--border);
+	position: relative;
+	cursor: pointer;
+}
+
+/* remove border */
+.cell:first-child,
+.cell:nth-child(2),
+.cell:nth-child(3) {
+	border-top: none;
+}
+
+.cell:nth-child(3n + 1) {
+	border-left: none;
+}
+
+.cell:nth-child(3n + 3) {
+	border-right: none;
+}
+
+.cell:last-child,
+.cell:nth-child(7),
+.cell:nth-child(8) {
+	border-bottom: none;
+}
+
+/* marks */
+.cell.cross,
+.cell.circle {
+	cursor: not-allowed;
+}
+
+/* cross */
+.cell.cross::before,
+.cell.cross::after,
+.cell.circle::before {
+	background-color: var(--mark);
+}
+
+.cell.cross::before,
+.cell.cross::after {
+	content: '';
+	position: absolute;
+	width: calc(var(--mark-size) * 0.15);
+	height: var(--mark-size);
+}
+
+.cell.cross::before {
+	transform: rotate(45deg);
+}
+
+.cell.cross::after {
+	transform: rotate(-45deg);
+}
+
+/* circle */
+.cell.circle::before,
+.cell.circle::after {
+	content: '';
+	position: absolute;
+	border-radius: 50%;
+}
+
+.cell.circle::after {
+	width: calc(var(--mark-size) * 0.7);
+	height: calc(var(--mark-size) * 0.7);
+	background-color: var(--bg);
+}
+
+.cell.circle::before {
+	width: var(--mark-size);
+	height: var(--mark-size);
+}
+
+/* buttons */
+button.cell {
+	background-color: var(--bg);
+}
+
+.start-game-btn {
 	margin: 1em;
+}
+
+.player-name {
+	margin-bottom: 1em;
 }
