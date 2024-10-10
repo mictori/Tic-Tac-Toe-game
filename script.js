@@ -1,28 +1,25 @@
-const Gameboard = (() => {
-	const gameBoardElement = document.querySelector('.board');
-	let gameBoard = ['', '', '', '', '', '', '', '', ''];
+const Gameboard = () => {
+	let board = ['', '', '', '', '', '', '', '', ''];
 	let cellElements = '';
 
 	const getBoard = () => {
 		cellElements = '';
-		gameBoard.forEach((_cell, index) => {
+		board.forEach((_cell, index) => {
 			cellElements += `<button class='cell' id=${index}></button>`;
 		});
-		gameBoardElement.innerHTML = cellElements;
 	};
 
-	const cells = document.getElementsByClassName('cell');
-	const getCells = () => [...cells];
+	const getCellElements = () => cellElements;
 
 	return {
 		getBoard,
-		getCells,
+		getCellElements,
 	};
-})();
+};
 
 //GAME CONTROLLER MODULE
 
-const GameController = (() => {
+const GameController = () => {
 	const winningCombinations = [
 		[0, 1, 2],
 		[3, 4, 5],
@@ -33,11 +30,16 @@ const GameController = (() => {
 		[0, 4, 8],
 		[2, 4, 6],
 	];
-
 	const classCross = 'cross';
 	const classCircle = 'circle';
 	let players = [];
 	let activePlayerIndex;
+	let currentPlayerMark;
+	let messageText = '';
+
+	const cells = document.getElementsByClassName('cell');
+	const messageElement = document.querySelector('.message');
+	//factory fn
 	const createPlayer = (name, mark) => {
 		return {
 			name,
@@ -46,36 +48,62 @@ const GameController = (() => {
 	};
 
 	const playNewRound = () => {
-		messageText.textContent = '';
-
-		players = [
-			createPlayer(document.querySelector('#player-1').value, classCross),
-			createPlayer(
-				document.querySelector('#player-2').value,
-				classCircle
-			),
-		];
-
+		createPlayers();
 		activePlayerIndex = 0;
-		Gameboard.getBoard();
-		printMessage();
-		listenCellClicks();
+		messageText = `${players[activePlayerIndex].name}'s turn`;
+		listenToCellClicks();
+		printGameMessage();
 	};
 
+	const createPlayers = () => {
+		const playerOne =
+			document.querySelector('#player-1').value || classCross;
+		const playerTwo =
+			document.querySelector('#player-2').value || classCircle;
+		players = [
+			createPlayer(playerOne, classCross),
+			createPlayer(playerTwo, classCircle),
+		];
+		console.log(players);
+	};
+
+	const listenToCellClicks = () => {
+		[...cells].forEach((cell) => {
+			cell.addEventListener('click', clickHandlerBoard, {
+				once: true,
+			});
+		});
+	};
+
+	//main logic
 	const clickHandlerBoard = (event) => {
+		//get id
 		let id = parseInt(event.target.id);
-		const currentPlayerMark = players[activePlayerIndex].mark;
+		console.log(id);
+
+		//place mark
+		currentPlayerMark = players[activePlayerIndex].mark;
 		placeMark(id, currentPlayerMark);
+
+		//winner
 		if (checkWin(currentPlayerMark)) {
-			gameOver(false);
-			stopListeningClicks();
+			messageText = `${players[
+				activePlayerIndex
+			].name.toUpperCase()} is the WINNER!`;
+			stopListeningToClicks();
+
+			//draw
 		} else if (checkDraw()) {
-			gameOver(true);
-			stopListeningClicks();
+			messageText = 'DRAW!';
+			stopListeningToClicks();
+
+			//continue playing
 		} else {
 			changeTurn();
-			printMessage();
+			messageText = `${players[activePlayerIndex].name}'s turn`;
 		}
+		//message
+		printGameMessage();
 	};
 
 	const placeMark = (index, mark) => {
@@ -84,17 +112,15 @@ const GameController = (() => {
 	};
 
 	const checkWin = (mark) => {
-		const cells = Gameboard.getCells();
 		return winningCombinations.some((combination) => {
 			return combination.every((index) => {
-				return cells[index].classList.contains(mark);
+				return [...cells][index].classList.contains(mark);
 			});
 		});
 	};
 
 	const checkDraw = () => {
-		const cells = Gameboard.getCells();
-		return cells.every((cell) => {
+		return [...cells].every((cell) => {
 			return (
 				cell.classList.contains(classCross) ||
 				cell.classList.contains(classCircle)
@@ -106,62 +132,59 @@ const GameController = (() => {
 		activePlayerIndex = activePlayerIndex === 0 ? 1 : 0;
 	};
 
-	const gameOver = (draw) => {
-		if (draw) {
-			messageText.textContent = 'Draw!';
-			Gameboard.getBoard();
-		} else {
-			messageText.textContent = `${
-				players[activePlayerIndex].name ||
-				players[activePlayerIndex].mark
-			} is the Winner!`;
-		}
+	const printGameMessage = () => {
+		messageElement.textContent = messageText;
 	};
 
-	const listenCellClicks = () => {
-		const cells = Gameboard.getCells();
-		cells.forEach((cell) => {
-			cell.addEventListener('click', GameController.clickHandlerBoard, {
-				once: true,
-			});
+	const stopListeningToClicks = () => {
+		[...cells].forEach((cell) => {
+			cell.removeEventListener('click', clickHandlerBoard);
 		});
 	};
 
-	const stopListeningClicks = () => {
-		const cells = Gameboard.getCells();
-		cells.forEach((cell) => {
-			cell.removeEventListener('click', GameController.clickHandlerBoard);
-		});
-	};
-
-	const messageText = document.querySelector('.message');
-
-	const printMessage = () => {
-		messageText.textContent = `${
-			players[activePlayerIndex].name || players[activePlayerIndex].mark
-		}'s turn`;
-	};
-
-	return {
-		playNewRound,
-		clickHandlerBoard,
-	};
-})();
+	return { playNewRound };
+};
 
 //SCREEN CONTROLLER MODULE
 
 const ScreenController = (() => {
+	const boardHTML = document.querySelector('.board');
 	const startBtn = document.querySelector('.start-game-btn');
 	const restartBtn = document.querySelector('.restart-btn');
+	const messageElement = document.querySelector('.message');
+	const inputContainer = document.querySelector('.players');
+	const playerOneField = document.querySelector('#player-1');
+	const playerTwoField = document.querySelector('#player-2');
+
+	const board = Gameboard();
+	const game = GameController();
 
 	const printNewRound = () => {
-		GameController.playNewRound();
+		hideStartFields();
+		//render board
+		printBoard();
+		game.playNewRound();
+	};
+
+	const printBoard = () => {
+		board.getBoard();
+		boardHTML.innerHTML = board.getCellElements();
+	};
+
+	const hideStartFields = () => {
+		startBtn.style.display = 'none';
+		inputContainer.style.display = 'none';
+	};
+
+	const printNewGame = () => {
+		boardHTML.innerHTML = '';
+		messageElement.textContent = '';
+		playerOneField.value = '';
+		playerTwoField.value = '';
+		startBtn.style.display = 'inline-block';
+		inputContainer.style.display = 'block';
 	};
 
 	startBtn.addEventListener('click', printNewRound);
-
-	restartBtn.addEventListener('click', printNewRound);
+	restartBtn.addEventListener('click', printNewGame);
 })();
-
-//print restart, message
-//hide inputs, start btn

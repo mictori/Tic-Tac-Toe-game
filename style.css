@@ -7,11 +7,14 @@
 }
 
 :root {
-	--mark: hsl(0, 0%, 20%);
-	--border: hsl(0, 0%, 60%);
-	--hover: hsl(0, 1%, 78%);
-	--bg: hsl(0, 0%, 100%);
+	--heading: #0a5d8a;
+	--mark-x: #f4a25b;
+	--mark-o: #708c69;
+	--violet: #aca2dd;
+	--shadow: #cbc5e8;
+	--bg: #f9f5ee;
 	--mark-size: 4.35rem;
+	--mark-size-s: 2.25rem;
 }
 
 input,
@@ -25,6 +28,8 @@ body {
 	-webkit-font-smoothing: antialiased;
 	font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
 		Roboto, sans-serif;
+	background-color: var(--bg);
+	color: var(--heading);
 }
 
 h1 {
@@ -41,6 +46,10 @@ h1 {
 	align-items: center;
 }
 
+.message {
+	color: var(--accent);
+}
+
 .board {
 	display: grid;
 	grid-template-columns: repeat(3, auto);
@@ -49,8 +58,9 @@ h1 {
 	align-content: center;
 	justify-items: center;
 	align-items: center;
-	width: 50vw;
-	height: 50vh;
+	margin: 2em;
+	/* width: 50vw;
+	height: 50vh; */
 }
 
 .cell {
@@ -60,7 +70,7 @@ h1 {
 	flex-wrap: wrap;
 	justify-content: center;
 	align-items: center;
-	border: 2px solid var(--border);
+	border: 2px solid var(--shadow);
 	position: relative;
 	cursor: pointer;
 }
@@ -94,9 +104,8 @@ h1 {
 
 /* cross */
 .cell.cross::before,
-.cell.cross::after,
-.cell.circle::before {
-	background-color: var(--mark);
+.cell.cross::after {
+	background-color: var(--mark-x);
 }
 
 .cell.cross::before,
@@ -121,6 +130,7 @@ h1 {
 	content: '';
 	position: absolute;
 	border-radius: 50%;
+	background-color: var(--mark-o);
 }
 
 .cell.circle::after {
@@ -139,10 +149,101 @@ button.cell {
 	background-color: var(--bg);
 }
 
-.start-game-btn {
-	margin: 1em;
+.start-game-btn,
+.restart-btn {
+	margin-top: 1em;
+	background-color: var(--violet);
+	border-radius: 3px;
+	border: 1px solid var(--violet);
+	color: var(--bg);
+	cursor: pointer;
+	display: inline-block;
+	font-size: 1rem;
+	font-weight: 600;
+	padding: 0.5em;
+	width: 9rem;
+	text-align: center;
+	vertical-align: baseline;
+}
+
+.start-game-btn:hover,
+.restart-btn:hover {
+	scale: 105%;
 }
 
 .player-name {
-	margin-bottom: 1em;
+	margin-bottom: 1.5em;
+	display: flex;
+}
+
+/* input */
+input {
+	border: none;
+	outline: none;
+	border-bottom: 0.2em solid var(--shadow);
+	background: var(--bg);
+	border-radius: 0.2em 0.2em 0 0;
+	padding: 0.4em;
+	font-weight: 600;
+}
+
+#player-1 {
+	color: var(--mark-x);
+}
+
+#player-2 {
+	color: var(--mark-o);
+}
+
+input::placeholder {
+	color: var(--violet);
+	font-weight: 600;
+}
+
+/* input mark cross */
+.player-mark-cross,
+.player-mark-circle {
+	width: 3.25em;
+	height: 3.25em;
+	position: relative;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.player-mark-cross::before,
+.player-mark-cross::after {
+	background-color: var(--mark-x);
+	content: '';
+	position: absolute;
+	width: calc(2.25em * 0.15);
+	height: 2.25em;
+}
+
+.player-mark-cross::before {
+	transform: rotate(45deg);
+}
+
+.player-mark-cross::after {
+	transform: rotate(-45deg);
+}
+
+/* input mark circle */
+.player-mark-circle::before,
+.player-mark-circle::after {
+	content: '';
+	position: absolute;
+	border-radius: 50%;
+	background-color: var(--mark-o);
+}
+
+.player-mark-circle::after {
+	width: calc(2.25em * 0.7);
+	height: calc(2.25em * 0.7);
+	background-color: var(--bg);
+}
+
+.player-mark-circle::before {
+	width: 2.25em;
+	height: 2.25em;
 }
