@@ -1,45 +1,32 @@
-const Gameboard = () => {
+//GAME BOARD MODULE
+
+const GameBoard = (() => {
 	let board = ['', '', '', '', '', '', '', '', ''];
 	let cellElements = '';
 
-	const getBoard = () => {
+	const createCells = () => {
 		cellElements = '';
 		board.forEach((_cell, index) => {
 			cellElements += `<button class='cell' id=${index}></button>`;
 		});
 	};
 
-	const getCellElements = () => cellElements;
+	const getCells = () => cellElements;
 
 	return {
-		getBoard,
-		getCellElements,
+		createCells,
+		getCells,
 	};
-};
+})();
 
 //GAME CONTROLLER MODULE
 
-const GameController = () => {
-	const winningCombinations = [
-		[0, 1, 2],
-		[3, 4, 5],
-		[6, 7, 8],
-		[0, 3, 6],
-		[1, 4, 7],
-		[2, 5, 8],
-		[0, 4, 8],
-		[2, 4, 6],
-	];
+const GameController = (() => {
+	const cells = document.getElementsByClassName('cell');
 	const classCross = 'cross';
 	const classCircle = 'circle';
 	let players = [];
-	let activePlayerIndex;
-	let currentPlayerMark;
-	let messageText = '';
-
-	const cells = document.getElementsByClassName('cell');
-	const messageElement = document.querySelector('.message');
-	//factory fn
+	let activePlayerIndex = 0;
 	const createPlayer = (name, mark) => {
 		return {
 			name,
@@ -47,15 +34,32 @@ const GameController = () => {
 		};
 	};
 
-	const playNewRound = () => {
-		createPlayers();
-		activePlayerIndex = 0;
-		messageText = `${players[activePlayerIndex].name}'s turn`;
-		listenToCellClicks();
-		printGameMessage();
+	//GAME MAIN LOGIC
+	const cellClickHandler = (event) => {
+		//get id
+		let id = parseInt(event.target.id);
+		//place mark
+		let activePlayerMark = players[activePlayerIndex].mark;
+		placeMark(id, activePlayerMark);
+		//if winner
+		if (checkWin(activePlayerMark)) {
+			ScreenController.displayWinner(
+				getActivePlayerName(),
+				activePlayerMark
+			);
+			ScreenController.disableCellListeners();
+			//if draw
+		} else if (checkDraw()) {
+			ScreenController.displayWinner(false, activePlayerMark);
+			ScreenController.disableCellListeners();
+			//continue playing
+		} else {
+			changeTurn();
+			ScreenController.printTurn(getActivePlayerName());
+		}
 	};
 
-	const createPlayers = () => {
+	const createNewPlayers = () => {
 		const playerOne =
 			document.querySelector('#player-1').value || classCross;
 		const playerTwo =
@@ -64,47 +68,13 @@ const GameController = () => {
 			createPlayer(playerOne, classCross),
 			createPlayer(playerTwo, classCircle),
 		];
-		console.log(players);
 	};
 
-	const listenToCellClicks = () => {
-		[...cells].forEach((cell) => {
-			cell.addEventListener('click', clickHandlerBoard, {
-				once: true,
-			});
-		});
+	const changeTurn = () => {
+		activePlayerIndex = activePlayerIndex === 0 ? 1 : 0;
 	};
 
-	//main logic
-	const clickHandlerBoard = (event) => {
-		//get id
-		let id = parseInt(event.target.id);
-		console.log(id);
-
-		//place mark
-		currentPlayerMark = players[activePlayerIndex].mark;
-		placeMark(id, currentPlayerMark);
-
-		//winner
-		if (checkWin(currentPlayerMark)) {
-			messageText = `${players[
-				activePlayerIndex
-			].name.toUpperCase()} is the WINNER!`;
-			stopListeningToClicks();
-
-			//draw
-		} else if (checkDraw()) {
-			messageText = 'DRAW!';
-			stopListeningToClicks();
-
-			//continue playing
-		} else {
-			changeTurn();
-			messageText = `${players[activePlayerIndex].name}'s turn`;
-		}
-		//message
-		printGameMessage();
-	};
+	const getActivePlayerName = () => players[activePlayerIndex].name;
 
 	const placeMark = (index, mark) => {
 		const cell = document.getElementById(index);
@@ -112,6 +82,16 @@ const GameController = () => {
 	};
 
 	const checkWin = (mark) => {
+		const winningCombinations = [
+			[0, 1, 2],
+			[3, 4, 5],
+			[6, 7, 8],
+			[0, 3, 6],
+			[1, 4, 7],
+			[2, 5, 8],
+			[0, 4, 8],
+			[2, 4, 6],
+		];
 		return winningCombinations.some((combination) => {
 			return combination.every((index) => {
 				return [...cells][index].classList.contains(mark);
@@ -128,56 +108,83 @@ const GameController = () => {
 		});
 	};
 
-	const changeTurn = () => {
-		activePlayerIndex = activePlayerIndex === 0 ? 1 : 0;
+	return {
+		getActivePlayerName,
+		cellClickHandler,
+		createNewPlayers,
 	};
-
-	const printGameMessage = () => {
-		messageElement.textContent = messageText;
-	};
-
-	const stopListeningToClicks = () => {
-		[...cells].forEach((cell) => {
-			cell.removeEventListener('click', clickHandlerBoard);
-		});
-	};
-
-	return { playNewRound };
-};
+})();
 
 //SCREEN CONTROLLER MODULE
 
 const ScreenController = (() => {
-	const boardHTML = document.querySelector('.board');
 	const startBtn = document.querySelector('.start-game-btn');
 	const restartBtn = document.querySelector('.restart-btn');
-	const messageElement = document.querySelector('.message');
+	const cellElements = document.getElementsByClassName('cell');
 	const inputContainer = document.querySelector('.players');
+	const messageElement = document.querySelector('.message-element');
 	const playerOneField = document.querySelector('#player-1');
 	const playerTwoField = document.querySelector('#player-2');
+	const boardElement = document.querySelector('.board');
+	const board = GameBoard;
+	const game = GameController;
 
-	const board = Gameboard();
-	const game = GameController();
-
-	const printNewRound = () => {
-		hideStartFields();
-		//render board
+	//GAME INIT
+	const printRound = () => {
+		hideStartingFields();
+		game.createNewPlayers();
+		printTurn(game.getActivePlayerName());
 		printBoard();
-		game.playNewRound();
+		setUpCellListeners();
 	};
 
 	const printBoard = () => {
-		board.getBoard();
-		boardHTML.innerHTML = board.getCellElements();
+		board.createCells();
+		boardElement.innerHTML = board.getCells();
 	};
 
-	const hideStartFields = () => {
+	const setUpCellListeners = () => {
+		[...cellElements].forEach((cell) => {
+			cell.addEventListener('click', game.cellClickHandler, {
+				once: true,
+			});
+		});
+	};
+
+	const disableCellListeners = () => {
+		[...cellElements].forEach((cell) => {
+			cell.removeEventListener('click', game.cellClickHandler);
+		});
+	};
+
+	const displayWinner = (name, mark) => {
+		messageElement.textContent = '';
+		if (name && mark === 'circle') {
+			messageElement.innerHTML = `<span class="circle-color">${capitalizeName(
+				name
+			)}</span> is the winner!`;
+		} else if (name && mark === 'cross') {
+			messageElement.innerHTML = `<span>${capitalizeName(
+				name
+			)}</span> is the winner!`;
+		} else {
+			messageElement.textContent = `Draw!`;
+		}
+	};
+
+	const printTurn = (name) => {
+		messageElement.textContent = `${capitalizeName(name)}\'s turn`;
+	};
+
+	const capitalizeName = (name) => name[0].toUpperCase() + name.slice(1);
+
+	const hideStartingFields = () => {
 		startBtn.style.display = 'none';
 		inputContainer.style.display = 'none';
 	};
 
-	const printNewGame = () => {
-		boardHTML.innerHTML = '';
+	const resetGame = () => {
+		boardElement.innerHTML = '';
 		messageElement.textContent = '';
 		playerOneField.value = '';
 		playerTwoField.value = '';
@@ -185,6 +192,12 @@ const ScreenController = (() => {
 		inputContainer.style.display = 'block';
 	};
 
-	startBtn.addEventListener('click', printNewRound);
-	restartBtn.addEventListener('click', printNewGame);
+	startBtn.addEventListener('click', printRound);
+	restartBtn.addEventListener('click', resetGame);
+
+	return {
+		displayWinner,
+		printTurn,
+		disableCellListeners,
+	};
 })();
