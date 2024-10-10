@@ -18,6 +18,7 @@
 input,
 button {
 	font: inherit;
+	font-size: clamp(1rem, 0.85rem + 0.4vw, 1.2rem);
 }
 
 body {
@@ -49,11 +50,6 @@ span {
 	color: var(--green);
 }
 
-button,
-input {
-	font-size: clamp(1rem, 0.85rem + 0.4vw, 1.2rem);
-}
-
 /* GAME BOARD */
 
 main {
@@ -71,7 +67,7 @@ main {
 	align-content: center;
 	justify-items: center;
 	align-items: center;
-	margin: 2em;
+	margin: 1em;
 	/* width: 50vw;
 	height: 50vh; */
 }
@@ -162,6 +158,11 @@ button.cell {
 	background-color: var(--bg);
 }
 
+button.cell:focus,
+button.cell:active {
+	-webkit-tap-highlight-color: transparent;
+}
+
 .start-game-btn,
 .restart-btn {
 	margin-top: 1em;
@@ -199,6 +200,11 @@ input {
 	font-weight: 600;
 }
 
+input:focus,
+input:active {
+	-webkit-tap-highlight-color: transparent;
+}
+
 input::placeholder {
 	color: var(--violet);
 	font-weight: 600;
@@ -232,8 +238,8 @@ input:focus::placeholder {
 	background-color: var(--orange);
 	content: '';
 	position: absolute;
-	width: calc(2.25em * 0.15);
-	height: 2.25em;
+	width: calc(var(--mark-size-s) * 0.15);
+	height: var(--mark-size-s);
 }
 
 .player-mark-cross::before {
@@ -254,12 +260,12 @@ input:focus::placeholder {
 }
 
 .player-mark-circle::after {
-	width: calc(2.25em * 0.7);
-	height: calc(2.25em * 0.7);
+	width: calc(var(--mark-size-s) * 0.7);
+	height: calc(var(--mark-size-s) * 0.7);
 	background-color: var(--bg);
 }
 
 .player-mark-circle::before {
-	width: 2.25em;
-	height: 2.25em;
+	width: var(--mark-size-s);
+	height: var(--mark-size-s);
 }
